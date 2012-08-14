@@ -28,7 +28,16 @@ firefox[:extensions] = Array.new
 dirs = Pathname.new(extdir).children.select { |c| c.directory? }.collect { |p| p.to_s }
 
 for d in dirs
-  firefox[:extensions] << d
+  rdf = "#{d}/install.rdf"
+  if File.exists?(rdf) then
+    f = File.open (rdf)
+    doc = Nokogiri::XML(f)
+    id = doc.xpath('//xmlns:RDF/xmlns:Description/em:id').children[0].to_s
+    name = doc.xpath('//xmlns:RDF/xmlns:Description/em:name').children[0].to_s
+    version = doc.xpath('//xmlns:RDF/xmlns:Description/em:version').children[0].to_s
+    description = doc.xpath('//xmlns:RDF/xmlns:Description/em:description').children[0].to_s
+    firefox[:extensions] << { "id" => id, "name" => name, "version" => version, "description" => description }
+  end 
 end
 
 apps[:browsers][:firefox] = firefox
