@@ -5,18 +5,20 @@ provides 'apps/browsers/firefox'
 
 require_plugin "apps/browsers"
 
-apps[:browsers][:firefox] = Mash.new unless apps[:browsers][:firefox]
+# TODO: How to bail out if the following fails?
+firefox = Mash.new unless apps[:browsers][:firefox]
 
+# Version number
 cmd = "firefox -v"
 status, stdout, stderr = run_command(:no_status_check => true, :command => cmd)
 if status == 0
-  apps[:browsers][:firefox][:version] = stdout
+  firefox[:version] = stdout
 end
 
 extdir = "/usr/share/mozilla/extensions/{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
 
-apps[:browsers][:firefox][:extdir] = extdir
-apps[:browsers][:firefox][:extensions] = Array.new
+firefox[:extdir] = extdir
+firefox[:extensions] = Array.new
 
 # Logic: enter every directory under the extensions directory.
 # If the directory contains an install.rdf file, we assume that
@@ -26,5 +28,7 @@ apps[:browsers][:firefox][:extensions] = Array.new
 dirs = Pathname.new(extdir).children.select { |c| c.directory? }.collect { |p| p.to_s }
 
 for d in dirs
-  apps[:browsers][:firefox][:extensions] << d
+  firefox[:extensions] << d
 end
+
+apps[:browsers][:firefox] = firefox
